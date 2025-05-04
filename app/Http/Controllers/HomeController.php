@@ -18,7 +18,6 @@ class HomeController extends Controller {
     }
 
     public function dashboard() {
-        return view('content.dashboard.index')
-        ->with('events', $this->tableService->allTable());
+        return redirect()->to('levels');
     }
 }
