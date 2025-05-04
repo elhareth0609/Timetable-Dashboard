@@ -1,0 +1,47 @@
+{
+    "sections": [
+        {
+            "title" : "Teachers",
+            "icon" : "mdi mdi mdi-format-list-bulleted",
+            "name" : "teachers",
+            "link" : "/teachers"
+        },
+        {
+            "title" : "Structures",
+            "icon" : "mdi mdi-home-lightning-bolt-outline",
+            "name" : "structures",
+            "link" : "/structures"
+        },
+        {
+            "title" : "Levels",
+            "icon" : "mdi mdi-numeric",
+            "name" : "levels",
+            "link" : "/levels"
+        },
+        {
+            "title" : "Languages",
+            "icon" : "mdi mdi-translate",
+            "name" : "languages",
+            "link" : "/languages"
+        },
+        {
+            "type": "hr",
+            "title": "Settings"
+        },
+        {
+            "title": "Settings",
+            "icon": "mdi mdi-cog-outline",
+            "name": "settings.account.get",
+            "link": "/settings/account",
+            "submenu": [
+                {
+                    "title": "Account",
+                    "name": "settings.account.get",
+                    "link": "/settings/account"
+                }
+            ]
+        }
+
+    ]
+}
+

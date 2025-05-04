@@ -1,0 +1,1671 @@
+{{-- @extends('layouts.app')
+
+@section('title', __('Specialty Settings'))
+
+@section('content')
+<div class="card p-4">
+    <ul class="nav nav-tabs mb-4">
+        <li class="nav-item"><a class="nav-link" href="{{ route('specialty.get', $specialty->id) }}"><span class="mdi mdi-cog-outline me-2"></span>{{ __('Edit Specialty') }}</a></li>
+        <li class="nav-item"><a class="nav-link" href="{{ route('specialty.courses', $specialty->id) }}"><span class="mdi mdi-key-outline me-2"></span>{{ __('Courses') }}</a></li>
+        <li class="nav-item"><a class="nav-link" href="{{ route('specialty.groups', $specialty->id) }}"><span class="mdi mdi-key-outline me-2"></span>{{ __('Groups') }}</a></li>
+        <li class="nav-item"><a class="nav-link active" href="javascript:void(0);"><span class="mdi mdi-key-outline me-2"></span>{{ __('Table') }}</a></li>
+    </ul>
+
+    <div class="table-responsive card">
+        <table class="schedule-table" id="scheduleTable">
+            <thead>
+                <tr>
+                    <th rowspan="2">Day</th>
+                    <th colspan="6" class="shift-header">Time Slots</th>
+                </tr>
+                <tr>
+                    <!-- Time slots -->
+                    <th>8:30-10:00</th>
+                    <th>10:10-11:40</th>
+                    <th>11:50-13:20</th>
+                    <th>13:30-15:00</th>
+                    <th>15:10-16:40</th>
+                    <th>16:50-18:20</th>
+                </tr>
+            </thead>
+            <tbody id="scheduleBody">
+                <!-- Days will be inserted here -->
+            </tbody>
+        </table>
+    </div>
+    
+    <!-- Bootstrap Modal -->
+  <!-- Add Event Modal -->
+  <div class="modal fade" id="eventModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <form id="eventForm" class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Add Event</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label for="eventTitle" class="form-label">Event Title</label>
+                    <input type="text" id="eventTitle" class="form-control" required>
+                </div>
+                <div class="form-group form-group-floating mb-3">
+                    <label for="teacher_id" class="form-label">{{ __('Teacher') }}</label>
+                    <div class="custom-select-container">
+                        <select class="form-select custom-select" id="teacher_id" name="teacher_id" required>
+                            <option value="">{{ __('Select Teacher') }}</option>
+                            <option value="1">Khaleifa</option>
+                            <option value="2">Ben Brika</option>
+                            <option value="3">Bouhamed</option>
+                            <option value="4">Yagoub</option>
+                            <option value="5">Laouiti</option>
+                            <option value="6">Bagas</option>
+                            <option value="7">Mefteh</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group form-group-floating mb-3">
+                    <label for="room_id" class="form-label">{{ __('Room') }}</label>
+                    <div class="custom-select-container">
+                        <select class="form-select custom-select" id="room_id" name="room_id" required>
+                            <option value="">{{ __('Select Room') }}</option>
+                            <option value="S05">S05</option>
+                            <option value="S06">S06</option>
+                            <option value="LAB1">LAB1</option>
+                            <option value="LAB2">LAB2</option>
+                            <option value="LAB3">LAB3</option>
+                            <option value="LAB4">LAB4</option>
+                            <option value="Amphi A">Amphi A</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group form-group-floating mb-3">
+                    <label for="group_id" class="form-label">{{ __('Group') }}</label>
+                    <div class="custom-select-container">
+                        <select class="form-select custom-select" id="group_id" name="group_id" required>
+                            <option value="">{{ __('Select Group') }}</option>
+                            <option value="G1">G1</option>
+                            <option value="G2">G2</option>
+                            <option value="All">All Groups</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group form-group-floating mb-3">
+                  <label for="sessions" class="form-label">{{ __('Sessions') }}</label>
+                  <div class="custom-select-container">
+                      <select class="form-select custom-select" id="sessions" name="sessions" required>
+                          <option value="1">1 Session (1.5 hours)</option>
+                          <option value="2">2 Sessions (3 hours)</option>
+                      </select>
+                  </div>
+                </div>
+                <div class="mb-3">
+                    <label for="eventColor" class="form-label">Color</label>
+                    <input type="color" id="eventColor" class="form-control form-control-color" value="#3788d8" required>
+                </div>
+                <input type="hidden" id="selectedDay">
+                <input type="hidden" id="selectedSlot">
+            </div>
+            <div class="modal-footer">
+                <button type="submit" class="btn btn-primary">Add Event</button>
+            </div>
+        </form>
+    </div>
+  </div>
+
+
+  <!-- Edit Event Modal -->
+
+<div class="modal fade" id="editEventModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+      <form id="editEventForm" class="modal-content">
+          <div class="modal-header">
+              <h5 class="modal-title">Edit Event</h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+          </div>
+          <div class="modal-body">
+              <input type="hidden" id="editEventId">
+              <div class="mb-3">
+                  <label for="editEventTitle" class="form-label">Event Title</label>
+                  <input type="text" id="editEventTitle" class="form-control" required>
+              </div>
+              <div class="form-group form-group-floating mb-3">
+                  <label for="editTeacher_id" class="form-label">{{ __('Teacher') }}</label>
+                  <div class="custom-select-container">
+                      <select class="form-select custom-select" id="editTeacher_id" name="editTeacher_id" required>
+                          <option value="">{{ __('Select Teacher') }}</option>
+                          <option value="1">Khaleifa</option>
+                          <option value="2">Ben Brika</option>
+                          <option value="3">Bouhamed</option>
+                          <option value="4">Yagoub</option>
+                          <option value="5">Laouiti</option>
+                          <option value="6">Bagas</option>
+                          <option value="7">Mefteh</option>
+                          <option value="8">Maloul</option>
+                      </select>
+                  </div>
+              </div>
+              <div class="form-group form-group-floating mb-3">
+                  <label for="editRoom_id" class="form-label">{{ __('Room') }}</label>
+                  <div class="custom-select-container">
+                      <select class="form-select custom-select" id="editRoom_id" name="editRoom_id" required>
+                          <option value="">{{ __('Select Room') }}</option>
+                          <option value="S05">S05</option>
+                          <option value="S06">S06</option>
+                          <option value="LAB1">LAB1</option>
+                          <option value="LAB2">LAB2</option>
+                          <option value="LAB3">LAB3</option>
+                          <option value="LAB4">LAB4</option>
+                          <option value="Amphi A">Amphi A</option>
+                      </select>
+                  </div>
+              </div>
+              <div class="form-group form-group-floating mb-3">
+                  <label for="editGroup_id" class="form-label">{{ __('Group') }}</label>
+                  <div class="custom-select-container">
+                      <select class="form-select custom-select" id="editGroup_id" name="editGroup_id" required>
+                          <option value="">{{ __('Select Group') }}</option>
+                          <option value="G1">G1</option>
+                          <option value="G2">G2</option>
+                          <option value="All">All Groups</option>
+                      </select>
+                  </div>
+              </div>
+              <div class="form-group form-group-floating mb-3">
+                  <label for="editSessions" class="form-label">{{ __('Sessions') }}</label>
+                  <div class="custom-select-container">
+                      <select class="form-select custom-select" id="editSessions" name="editSessions" required>
+                          <option value="1">1 Session (1.5 hours)</option>
+                          <option value="2">2 Sessions (3 hours)</option>
+                      </select>
+                  </div>
+              </div>
+              <div class="mb-3">
+                  <label for="editEventColor" class="form-label">Color</label>
+                  <input type="color" id="editEventColor" class="form-control form-control-color" value="#3788d8" required>
+              </div>
+              <input type="hidden" id="editSelectedDay">
+              <input type="hidden" id="editSelectedSlot">
+          </div>
+          <div class="modal-footer">
+              <button type="button" id="deleteEventBtn" class="btn btn-danger">Delete</button>
+              <button type="submit" class="btn btn-primary">Save Changes</button>
+          </div>
+      </form>
+  </div>
+</div>
+
+
+<!-- Add session field to the existing Add Event modal -->
+</div>
+
+<style>
+.nav-tabs {
+    border-bottom: none;
+}
+.nav-tabs .nav-link {
+    border: none;
+    color: #6c757d;
+}
+.nav-tabs .nav-link.active {
+    color: #0d6efd;
+    border-bottom: 2px solid #0d6efd;
+}
+
+.schedule-container {
+    max-width: 1200px;
+    margin: 40px auto;
+    overflow-x: auto;
+}
+.schedule-table {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: fixed; /* This helps with consistent column widths */
+}
+.schedule-table th, .schedule-table td {
+    border: 1px solid #ddd;
+    padding: 8px;
+    text-align: center;
+    height: 80px; /* Increased height */
+    position: relative; /* For proper positioning of multi-session events */
+}
+.schedule-table th {
+    background-color: #f8f9fa;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+.shift-header {
+    background-color: #e9ecef;
+}
+.day-cell {
+    font-weight: bold;
+    background-color: #f8f9fa;
+    width: 120px;
+}
+.schedule-cell {
+    position: relative;
+    vertical-align: top;
+    cursor: pointer;
+    min-width: 140px;
+    padding: 4px;
+    overflow: visible; /* Allow events to overflow cell borders */
+}
+.schedule-cell:hover {
+    background-color: #f1f3f5;
+}
+
+/* Event styles */
+.event-container {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    height: 100%;
+    position: relative; /* For proper positioning */
+}
+.event {
+    color: white;
+    border-radius: 3px;
+    padding: 4px;
+    font-size: 11px;
+    line-height: 1.1;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    position: relative;
+    z-index: 5; /* Ensure events stack above the table grid */
+}
+.event-title {
+    font-weight: bold;
+    margin-bottom: 1px;
+}
+.event-details {
+    display: flex;
+    justify-content: space-between;
+    font-size: 10px;
+}
+.event-duration {
+    font-size: 9px;
+    font-style: italic;
+    margin-top: 2px;
+}
+
+/* Hover effect for events */
+.event-hover {
+    transform: scale(1.05);
+    box-shadow: 0 3px 6px rgba(0,0,0,0.16), 0 3px 6px rgba(0,0,0,0.23);
+    z-index: 100;
+}
+
+/* Multi-session events (spanning multiple cells) */
+.event-double {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    z-index: 10;
+}
+
+/* Color categories */
+.event-tp { background-color: #7986cb; }
+.event-td { background-color: #4db6ac; }
+.event-c { background-color: #ff8a65; }
+.event-cloud { background-color: #4fc3f7; }
+.event-crypto { background-color: #ffa726; }
+.event-security { background-color: #ef5350; }
+.event-english { background-color: #ffee58; }
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const eventModal = new bootstrap.Modal(document.getElementById('eventModal'));
+  const editModal = new bootstrap.Modal(document.getElementById('editEventModal'));
+  const events = [];
+  
+  // Time slots configuration
+  const timeSlots = [
+      { code: 'TS1', display: '8:30-10:00' },
+      { code: 'TS2', display: '10:10-11:40' },
+      { code: 'TS3', display: '11:50-13:20' },
+      { code: 'TS4', display: '13:30-15:00' },
+      { code: 'TS5', display: '15:10-16:40' },
+      { code: 'TS6', display: '16:50-18:20' }
+  ];
+  
+  // Days configuration
+  const days = [
+      { id: 'SAT', name: 'Saturday', name_ar: 'السبت' },
+      { id: 'SUN', name: 'Sunday', name_ar: 'الأحد' },
+      { id: 'MON', name: 'Monday', name_ar: 'الإثنين' },
+      { id: 'TUE', name: 'Tuesday', name_ar: 'الثلاثاء' },
+      { id: 'WED', name: 'Wednesday', name_ar: 'الأربعاء' }
+  ];
+
+  // Initial event data
+  const initialEvents = [
+      // Saturday events
+      { id: 1, title: 'TP Sécurité syst', teacher: 'Khaleifa', room: 'S06', group: 'G1', day: 'SAT', slot: 'TS1', color: '#ef5350', sessions: 1 },
+      { id: 2, title: 'TP Big data', teacher: 'Maloul', room: 'LAB3', group: 'G1', day: 'SAT', slot: 'TS2', color: '#7986cb', sessions: 1 },
+      { id: 3, title: 'TP Big data', teacher: 'Maloul', room: 'LAB3', group: 'G2', day: 'SAT', slot: 'TS1', color: '#7986cb', sessions: 1 },
+      { id: 4, title: 'TP Sécurité syst', teacher: 'Khaleifa', room: 'S06', group: 'G2', day: 'SAT', slot: 'TS2', color: '#ef5350', sessions: 1 },
+      { id: 5, title: 'C Cloud Computing', teacher: 'Yagoub', room: 'Amphi A', group: 'All', day: 'SAT', slot: 'TS3', color: '#4fc3f7', sessions: 1 },
+      { id: 6, title: 'C Anglais scien', teacher: '', room: '', group: 'All', day: 'SAT', slot: 'TS5', color: '#ffee58', sessions: 2 }, // 3-hour event
+      
+      // Sunday events
+      { id: 7, title: 'TD Syst temps-réel', teacher: 'Ben Brika', room: 'S06', group: 'G1', day: 'SUN', slot: 'TS1', color: '#4db6ac', sessions: 1 },
+      { id: 8, title: 'TP Outils libres', teacher: 'Bouhamed', room: 'LAB2', group: 'G1', day: 'SUN', slot: 'TS2', color: '#7986cb', sessions: 1 },
+      { id: 9, title: 'TP Outils libres', teacher: 'Bouhamed', room: 'LAB2', group: 'G2', day: 'SUN', slot: 'TS1', color: '#7986cb', sessions: 1 },
+      { id: 10, title: 'TD Syst temps-réel', teacher: 'Ben Brika', room: 'S06', group: 'G2', day: 'SUN', slot: 'TS2', color: '#4db6ac', sessions: 1 },
+      { id: 11, title: 'C Outils libres', teacher: 'Bouhamed', room: 'Amphi A', group: 'All', day: 'SUN', slot: 'TS3', color: '#4db6ac', sessions: 1 },
+      { id: 12, title: 'C Syst temps-réel', teacher: 'Ben Brika', room: 'S', group: 'All', day: 'SUN', slot: 'TS5', color: '#4db6ac', sessions: 1 },
+      
+      // Monday events
+      { id: 13, title: 'C Big data', teacher: 'Mefteh', room: 'S05', group: 'All', day: 'MON', slot: 'TS1', color: '#ff8a65', sessions: 1 },
+      { id: 14, title: 'C Concep logic emb', teacher: 'Bagas', room: 'S05', group: 'All', day: 'MON', slot: 'TS2', color: '#ff8a65', sessions: 1 },
+      { id: 15, title: 'TP Concep logic', teacher: 'Bagas', room: 'LAB3', group: 'G1', day: 'MON', slot: 'TS3', color: '#7986cb', sessions: 1 },
+      { id: 16, title: 'TP Syst temps-réel', teacher: 'Ben Brika', room: 'LAB4', group: 'G1', day: 'MON', slot: 'TS4', color: '#7986cb', sessions: 1 },
+      { id: 17, title: 'TD Syst temps', teacher: 'Ben Brika', room: '', group: 'G2', day: 'MON', slot: 'TS3', color: '#4db6ac', sessions: 1 },
+      { id: 18, title: 'TP Concep logic emb', teacher: 'Bagas', room: 'LAB3', group: 'G2', day: 'MON', slot: 'TS4', color: '#7986cb', sessions: 1 },
+      
+      // Tuesday events
+      { id: 19, title: 'C Sécurité syst', teacher: 'Khaleifa', room: 'S05', group: 'All', day: 'TUE', slot: 'TS1', color: '#ef5350', sessions: 1 },
+      { id: 20, title: 'C Cryptologie appliqué', teacher: 'Laouiti', room: 'S05', group: 'All', day: 'TUE', slot: 'TS2', color: '#ffa726', sessions: 1 },
+      { id: 21, title: 'TP Cloud Computing', teacher: 'Yagoub', room: 'LAB1', group: 'G1', day: 'TUE', slot: 'TS3', color: '#4fc3f7', sessions: 2 }, // 3-hour event
+      { id: 22, title: 'TP Cryptologie appliqué', teacher: 'Laouiti', room: 'LAB3', group: 'G2', day: 'TUE', slot: 'TS3', color: '#ffa726', sessions: 2 }, // 3-hour event
+  ];
+  
+  // Generate schedule with days in rows and time slots in columns
+  function generateSchedule() {
+      const tbody = document.getElementById('scheduleBody');
+      tbody.innerHTML = '';
+      
+      days.forEach(day => {
+          const tr = document.createElement('tr');
+          
+          // Add day cell
+          const dayCell = document.createElement('td');
+          dayCell.className = 'day-cell';
+          dayCell.textContent = day.name;
+          tr.appendChild(dayCell);
+          
+          // Add time slot cells
+          timeSlots.forEach(slot => {
+              const cell = document.createElement('td');
+              cell.className = 'schedule-cell';
+              cell.id = `cell-${day.id}-${slot.code}`;
+              cell.dataset.dayId = day.id;
+              cell.dataset.slotCode = slot.code;
+              
+              // Add event container to each cell
+              const eventContainer = document.createElement('div');
+              eventContainer.className = 'event-container';
+              cell.appendChild(eventContainer);
+              
+              // Cell click handler (only triggers if the click was not on an event)
+              cell.addEventListener('click', function(e) {
+                  if (e.target === cell || e.target === eventContainer) {
+                      document.getElementById('selectedDay').value = day.id;
+                      document.getElementById('selectedSlot').value = slot.code;
+                      
+                      // Reset the form
+                      document.getElementById('eventForm').reset();
+                      document.getElementById('eventColor').value = '#3788d8';
+                      
+                      // Show Add Event modal
+                      eventModal.show();
+                  }
+              });
+              
+              tr.appendChild(cell);
+          });
+          
+          tbody.appendChild(tr);
+      });
+      
+      // Load initial events from the data
+      events.push(...initialEvents);
+      displayEvents();
+  }
+  
+  // Find next time slot
+  function getNextTimeSlot(currentSlot) {
+      const slotIndex = timeSlots.findIndex(slot => slot.code === currentSlot);
+      return (slotIndex < timeSlots.length - 1) ? timeSlots[slotIndex + 1].code : null;
+  }
+  
+  // Display events on the schedule
+  function displayEvents() {
+      // Clear existing events
+      document.querySelectorAll('.event-container').forEach(container => {
+          container.innerHTML = '';
+      });
+      
+      // First pass: prepare and organize events
+      const cellReservations = {};
+      
+      events.forEach(event => {
+          const cellId = `cell-${event.day}-${event.slot}`;
+          if (!cellReservations[cellId]) {
+              cellReservations[cellId] = [];
+          }
+          
+          // Add to first cell
+          cellReservations[cellId].push({
+              ...event,
+              isStart: true,
+              spanCells: event.sessions
+          });
+          
+          // If this is a multi-session event, mark the next cell(s) as reserved
+          if (event.sessions > 1) {
+              let nextSlotCode = event.slot;
+              for (let i = 1; i < event.sessions; i++) {
+                  nextSlotCode = getNextTimeSlot(nextSlotCode);
+                  if (!nextSlotCode) break;
+                  
+                  const nextCellId = `cell-${event.day}-${nextSlotCode}`;
+                  if (!cellReservations[nextCellId]) {
+                      cellReservations[nextCellId] = [];
+                  }
+                  
+                  // Mark as reserved by this event
+                  cellReservations[nextCellId].push({
+                      ...event,
+                      isStart: false,
+                      isReserved: true,
+                      originalCellId: cellId
+                  });
+              }
+          }
+      });
+      
+      // Second pass: render events
+      for (const [cellId, reservations] of Object.entries(cellReservations)) {
+          const cell = document.getElementById(cellId);
+          if (!cell) continue;
+          
+          const container = cell.querySelector('.event-container');
+          if (!container) continue;
+          
+          // Only render events that start in this cell
+          reservations.filter(r => r.isStart).forEach(event => {
+              createEventElement(container, event);
+          });
+      }
+  }
+  
+  // Create event element
+  function createEventElement(container, event) {
+      const eventEl = document.createElement('div');
+      eventEl.className = 'event';
+      eventEl.dataset.eventId = event.id;
+      eventEl.style.backgroundColor = event.color;
+      
+      // For multi-session events, make them visually span multiple cells
+      if (event.sessions > 1) {
+          eventEl.classList.add('event-double');
+          // Calculate width based on number of sessions (subtract borders)
+          const cellWidth = document.querySelector('.schedule-cell').offsetWidth;
+          if (event.sessions === 2) {
+              eventEl.style.width = `${(cellWidth * 2) - 2}px`;
+          }
+      }
+      
+      // Structure the event content with title and details
+      eventEl.innerHTML = `
+          <div class="event-title">${event.title}</div>
+          <div class="event-details">
+              <span>${event.group}</span>
+              <span>${event.room}</span>
+          </div>
+          ${event.sessions > 1 ? '<div class="event-duration">' + event.sessions + ' sessions</div>' : ''}
+      `;
+      
+      // Add hover and click handlers
+      eventEl.addEventListener('mouseover', function() {
+          this.classList.add('event-hover');
+      });
+      
+      eventEl.addEventListener('mouseout', function() {
+          this.classList.remove('event-hover');
+      });
+      
+      eventEl.addEventListener('click', function(e) {
+          e.stopPropagation(); // Prevent cell click handler from firing
+          
+          // Find the event data
+          const eventId = this.dataset.eventId;
+          const eventData = events.find(e => e.id.toString() === eventId);
+          
+          if (eventData) {
+              // Populate edit form
+              document.getElementById('editEventId').value = eventData.id;
+              document.getElementById('editEventTitle').value = eventData.title;
+              document.getElementById('editTeacher_id').value = getTeacherIdByName(eventData.teacher);
+              document.getElementById('editRoom_id').value = eventData.room;
+              document.getElementById('editGroup_id').value = eventData.group;
+              document.getElementById('editEventColor').value = eventData.color;
+              document.getElementById('editSessions').value = eventData.sessions;
+              document.getElementById('editSelectedDay').value = eventData.day;
+              document.getElementById('editSelectedSlot').value = eventData.slot;
+              
+              // Show edit modal
+              editModal.show();
+          }
+      });
+      
+      container.appendChild(eventEl);
+  }
+  
+  // Helper function to get teacher ID by name
+  function getTeacherIdByName(name) {
+      const teacherMap = {
+          'Khaleifa': '1',
+          'Ben Brika': '2',
+          'Bouhamed': '3',
+          'Yagoub': '4',
+          'Laouiti': '5',
+          'Bagas': '6',
+          'Mefteh': '7',
+          'Maloul': '8'
+      };
+      return teacherMap[name] || '';
+  }
+  
+  // Handle add form submission
+  document.getElementById('eventForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      const title = document.getElementById('eventTitle').value;
+      const teacher = document.getElementById('teacher_id').selectedOptions[0].textContent;
+      const room = document.getElementById('room_id').value;
+      const group = document.getElementById('group_id').value;
+      const color = document.getElementById('eventColor').value;
+      const day = document.getElementById('selectedDay').value;
+      const slot = document.getElementById('selectedSlot').value;
+      const sessions = parseInt(document.getElementById('sessions').value);
+      
+      // Generate a new ID (max existing ID + 1)
+      const newId = Math.max(...events.map(e => e.id), 0) + 1;
+
+      events.push({
+          id: newId,
+          title: title,
+          teacher: teacher,
+          room: room,
+          group: group,
+          day: day,
+          slot: slot,
+          color: color,
+          sessions: sessions
+      });
+      
+      displayEvents();
+      eventModal.hide();
+      e.target.reset();
+      document.getElementById('eventColor').value = '#3788d8';
+  });
+  
+  // Handle edit form submission
+  document.getElementById('editEventForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      const id = parseInt(document.getElementById('editEventId').value);
+      const title = document.getElementById('editEventTitle').value;
+      const teacher = document.getElementById('editTeacher_id').selectedOptions[0].textContent;
+      const room = document.getElementById('editRoom_id').value;
+      const group = document.getElementById('editGroup_id').value;
+      const color = document.getElementById('editEventColor').value;
+      const day = document.getElementById('editSelectedDay').value;
+      const slot = document.getElementById('editSelectedSlot').value;
+      const sessions = parseInt(document.getElementById('editSessions').value);
+      
+      // Find and update the event
+      const eventIndex = events.findIndex(e => e.id === id);
+      if (eventIndex !== -1) {
+          events[eventIndex] = {
+              id,
+              title,
+              teacher,
+              room,
+              group,
+              day,
+              slot,
+              color,
+              sessions
+          };
+          
+          displayEvents();
+          editModal.hide();
+      }
+  });
+  
+  // Handle delete event
+  document.getElementById('deleteEventBtn').addEventListener('click', function() {
+      const id = parseInt(document.getElementById('editEventId').value);
+      
+      // Remove the event
+      const eventIndex = events.findIndex(e => e.id === id);
+      if (eventIndex !== -1) {
+          events.splice(eventIndex, 1);
+          displayEvents();
+          editModal.hide();
+      }
+  });
+  
+  // Initialize the schedule
+  generateSchedule();
+});
+</script>
+@endsection --}}
+
+
+
+
+
+
+
+
+
+
+
+{{-- @extends('layouts.app')
+
+@section('title', __('Specialty Settings'))
+
+@section('content')
+<div class="card p-4">
+    <ul class="nav nav-tabs mb-4">
+        <li class="nav-item"><a class="nav-link" href="{{ route('specialty.get', $specialty->id) }}"><span class="mdi mdi-cog-outline me-2"></span>{{ __('Edit Specialty') }}</a></li>
+        <li class="nav-item"><a class="nav-link" href="{{ route('specialty.courses', $specialty->id) }}"><span class="mdi mdi-key-outline me-2"></span>{{ __('Courses') }}</a></li>
+        <li class="nav-item"><a class="nav-link" href="{{ route('specialty.groups', $specialty->id) }}"><span class="mdi mdi-key-outline me-2"></span>{{ __('Groups') }}</a></li>
+        <li class="nav-item"><a class="nav-link active" href="javascript:void(0);"><span class="mdi mdi-key-outline me-2"></span>{{ __('Table') }}</a></li>
+    </ul>
+
+    <div class="table-responsive card">
+        <table class="schedule-table" id="scheduleTable">
+            <thead>
+                <tr>
+                    <th rowspan="2">Day</th>
+                    <th colspan="6" class="shift-header">Time Slots</th>
+                </tr>
+                <tr>
+                    <!-- Time slots -->
+                    <th>8:30-10:00</th>
+                    <th>10:10-11:40</th>
+                    <th>11:50-13:20</th>
+                    <th>13:30-15:00</th>
+                    <th>15:10-16:40</th>
+                    <th>16:50-18:20</th>
+                </tr>
+            </thead>
+            <tbody id="scheduleBody">
+                <!-- Days will be inserted here -->
+            </tbody>
+        </table>
+    </div>
+    
+    <!-- Bootstrap Modal -->
+  <!-- Add Event Modal -->
+  <div class="modal fade" id="eventModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <form id="eventForm" class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Add Event</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label for="eventTitle" class="form-label">Event Title</label>
+                    <input type="text" id="eventTitle" class="form-control" required>
+                </div>
+                <div class="form-group form-group-floating mb-3">
+                    <label for="teacher_id" class="form-label">{{ __('Teacher') }}</label>
+                    <div class="custom-select-container">
+                        <select class="form-select custom-select" id="teacher_id" name="teacher_id" required>
+                            <option value="">{{ __('Select Teacher') }}</option>
+                            <option value="1">Khaleifa</option>
+                            <option value="2">Ben Brika</option>
+                            <option value="3">Bouhamed</option>
+                            <option value="4">Yagoub</option>
+                            <option value="5">Laouiti</option>
+                            <option value="6">Bagas</option>
+                            <option value="7">Mefteh</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group form-group-floating mb-3">
+                    <label for="room_id" class="form-label">{{ __('Room') }}</label>
+                    <div class="custom-select-container">
+                        <select class="form-select custom-select" id="room_id" name="room_id" required>
+                            <option value="">{{ __('Select Room') }}</option>
+                            <option value="S05">S05</option>
+                            <option value="S06">S06</option>
+                            <option value="LAB1">LAB1</option>
+                            <option value="LAB2">LAB2</option>
+                            <option value="LAB3">LAB3</option>
+                            <option value="LAB4">LAB4</option>
+                            <option value="Amphi A">Amphi A</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group form-group-floating mb-3">
+                    <label for="group_id" class="form-label">{{ __('Group') }}</label>
+                    <div class="custom-select-container">
+                        <select class="form-select custom-select" id="group_id" name="group_id" required>
+                            <option value="">{{ __('Select Group') }}</option>
+                            <option value="G1">G1</option>
+                            <option value="G2">G2</option>
+                            <option value="All">All Groups</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group form-group-floating mb-3">
+                  <label for="sessions" class="form-label">{{ __('Sessions') }}</label>
+                  <div class="custom-select-container">
+                      <select class="form-select custom-select" id="sessions" name="sessions" required>
+                          <option value="1">1 Session (1.5 hours)</option>
+                          <option value="2">2 Sessions (3 hours)</option>
+                      </select>
+                  </div>
+                </div>
+                <div class="mb-3">
+                    <label for="eventColor" class="form-label">Color</label>
+                    <input type="color" id="eventColor" class="form-control form-control-color" value="#3788d8" required>
+                </div>
+                <input type="hidden" id="selectedDay">
+                <input type="hidden" id="selectedSlot">
+            </div>
+            <div class="modal-footer">
+                <button type="submit" class="btn btn-primary">Add Event</button>
+            </div>
+        </form>
+    </div>
+  </div>
+
+
+  <!-- Edit Event Modal -->
+
+<div class="modal fade" id="editEventModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+      <form id="editEventForm" class="modal-content">
+          <div class="modal-header">
+              <h5 class="modal-title">Edit Event</h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+          </div>
+          <div class="modal-body">
+              <input type="hidden" id="editEventId">
+              <div class="mb-3">
+                  <label for="editEventTitle" class="form-label">Event Title</label>
+                  <input type="text" id="editEventTitle" class="form-control" required>
+              </div>
+              <div class="form-group form-group-floating mb-3">
+                  <label for="editTeacher_id" class="form-label">{{ __('Teacher') }}</label>
+                  <div class="custom-select-container">
+                      <select class="form-select custom-select" id="editTeacher_id" name="editTeacher_id" required>
+                          <option value="">{{ __('Select Teacher') }}</option>
+                          <option value="1">Khaleifa</option>
+                          <option value="2">Ben Brika</option>
+                          <option value="3">Bouhamed</option>
+                          <option value="4">Yagoub</option>
+                          <option value="5">Laouiti</option>
+                          <option value="6">Bagas</option>
+                          <option value="7">Mefteh</option>
+                          <option value="8">Maloul</option>
+                      </select>
+                  </div>
+              </div>
+              <div class="form-group form-group-floating mb-3">
+                  <label for="editRoom_id" class="form-label">{{ __('Room') }}</label>
+                  <div class="custom-select-container">
+                      <select class="form-select custom-select" id="editRoom_id" name="editRoom_id" required>
+                          <option value="">{{ __('Select Room') }}</option>
+                          <option value="S05">S05</option>
+                          <option value="S06">S06</option>
+                          <option value="LAB1">LAB1</option>
+                          <option value="LAB2">LAB2</option>
+                          <option value="LAB3">LAB3</option>
+                          <option value="LAB4">LAB4</option>
+                          <option value="Amphi A">Amphi A</option>
+                      </select>
+                  </div>
+              </div>
+              <div class="form-group form-group-floating mb-3">
+                  <label for="editGroup_id" class="form-label">{{ __('Group') }}</label>
+                  <div class="custom-select-container">
+                      <select class="form-select custom-select" id="editGroup_id" name="editGroup_id" required>
+                          <option value="">{{ __('Select Group') }}</option>
+                          <option value="G1">G1</option>
+                          <option value="G2">G2</option>
+                          <option value="All">All Groups</option>
+                      </select>
+                  </div>
+              </div>
+              <div class="form-group form-group-floating mb-3">
+                  <label for="editSessions" class="form-label">{{ __('Sessions') }}</label>
+                  <div class="custom-select-container">
+                      <select class="form-select custom-select" id="editSessions" name="editSessions" required>
+                          <option value="1">1 Session (1.5 hours)</option>
+                          <option value="2">2 Sessions (3 hours)</option>
+                      </select>
+                  </div>
+              </div>
+              <div class="mb-3">
+                  <label for="editEventColor" class="form-label">Color</label>
+                  <input type="color" id="editEventColor" class="form-control form-control-color" value="#3788d8" required>
+              </div>
+              <input type="hidden" id="editSelectedDay">
+              <input type="hidden" id="editSelectedSlot">
+          </div>
+          <div class="modal-footer">
+              <button type="button" id="deleteEventBtn" class="btn btn-danger">Delete</button>
+              <button type="submit" class="btn btn-primary">Save Changes</button>
+          </div>
+      </form>
+  </div>
+</div>
+
+
+<!-- Add session field to the existing Add Event modal -->
+</div>
+
+<style>
+    .nav-tabs {
+        border-bottom: none;
+    }
+    .nav-tabs .nav-link {
+        border: none;
+        color: #6c757d;
+    }
+    .nav-tabs .nav-link.active {
+        color: #0d6efd;
+        border-bottom: 2px solid #0d6efd;
+    }
+
+    .schedule-container {
+    max-width: 1200px;
+    margin: 40px auto;
+    overflow-x: auto;
+}
+.schedule-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+.schedule-table th, .schedule-table td {
+    border: 1px solid #ddd;
+    padding: 8px;
+    text-align: center;
+    height: 80px; /* Increased height */
+}
+.schedule-table th {
+    background-color: #f8f9fa;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+.shift-header {
+    background-color: #e9ecef;
+}
+.day-cell {
+    font-weight: bold;
+    background-color: #f8f9fa;
+    width: 120px;
+}
+.schedule-cell {
+    position: relative;
+    vertical-align: top;
+    cursor: pointer;
+    min-width: 140px;
+    padding: 4px;
+}
+.schedule-cell:hover {
+    background-color: #f1f3f5;
+}
+
+/* Event styles */
+.event-container {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    height: 100%;
+}
+.event {
+    color: white;
+    border-radius: 3px;
+    padding: 4px;
+    font-size: 11px;
+    line-height: 1.1;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    position: relative;
+}
+.event-title {
+    font-weight: bold;
+    margin-bottom: 1px;
+}
+.event-details {
+    display: flex;
+    justify-content: space-between;
+    font-size: 10px;
+}
+.event-duration {
+    font-size: 9px;
+    font-style: italic;
+    margin-top: 2px;
+}
+
+/* Hover effect for events */
+.event-hover {
+    transform: scale(1.05);
+    box-shadow: 0 3px 6px rgba(0,0,0,0.16), 0 3px 6px rgba(0,0,0,0.23);
+    z-index: 100;
+}
+
+/* Double-session events */
+.event-double {
+    min-height: 70px; /* Make double events taller */
+}
+
+/* Color categories */
+.event-tp { background-color: #7986cb; }
+.event-td { background-color: #4db6ac; }
+.event-c { background-color: #ff8a65; }
+.event-cloud { background-color: #4fc3f7; }
+.event-crypto { background-color: #ffa726; }
+.event-security { background-color: #ef5350; }
+.event-english { background-color: #ffee58; }
+</style>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const eventModal = new bootstrap.Modal(document.getElementById('eventModal'));
+    const editModal = new bootstrap.Modal(document.getElementById('editEventModal'));
+    const events = [];
+    
+    // Time slots configuration
+    const timeSlots = [
+        { code: 'TS1', display: '8:30-10:00' },
+        { code: 'TS2', display: '10:10-11:40' },
+        { code: 'TS3', display: '11:50-13:20' },
+        { code: 'TS4', display: '13:30-15:00' },
+        { code: 'TS5', display: '15:10-16:40' },
+        { code: 'TS6', display: '16:50-18:20' }
+    ];
+    
+    // Days configuration
+    const days = [
+        { id: 'SAT', name: 'Saturday', name_ar: 'السبت' },
+        { id: 'SUN', name: 'Sunday', name_ar: 'الأحد' },
+        { id: 'MON', name: 'Monday', name_ar: 'الإثنين' },
+        { id: 'TUE', name: 'Tuesday', name_ar: 'الثلاثاء' },
+        { id: 'WED', name: 'Wednesday', name_ar: 'الأربعاء' }
+    ];
+
+    // Initial event data
+    const initialEvents = [
+        // Saturday events
+        { id: 1, title: 'TP Sécurité syst', teacher: 'Khaleifa', room: 'S06', group: 'G1', day: 'SAT', slot: 'TS1', color: '#ef5350', sessions: 1 },
+        { id: 2, title: 'TP Big data', teacher: 'Maloul', room: 'LAB3', group: 'G1', day: 'SAT', slot: 'TS2', color: '#7986cb', sessions: 1 },
+        { id: 3, title: 'TP Big data', teacher: 'Maloul', room: 'LAB3', group: 'G2', day: 'SAT', slot: 'TS1', color: '#7986cb', sessions: 1 },
+        { id: 4, title: 'TP Sécurité syst', teacher: 'Khaleifa', room: 'S06', group: 'G2', day: 'SAT', slot: 'TS2', color: '#ef5350', sessions: 1 },
+        { id: 5, title: 'C Cloud Computing', teacher: 'Yagoub', room: 'Amphi A', group: 'All', day: 'SAT', slot: 'TS3', color: '#4fc3f7', sessions: 1 },
+        { id: 6, title: 'C Anglais scien', teacher: '', room: '', group: 'All', day: 'SAT', slot: 'TS5', color: '#ffee58', sessions: 2 }, // 3-hour event
+        
+        // Sunday events
+        { id: 7, title: 'TD Syst temps-réel', teacher: 'Ben Brika', room: 'S06', group: 'G1', day: 'SUN', slot: 'TS1', color: '#4db6ac', sessions: 1 },
+        { id: 8, title: 'TP Outils libres', teacher: 'Bouhamed', room: 'LAB2', group: 'G1', day: 'SUN', slot: 'TS2', color: '#7986cb', sessions: 1 },
+        { id: 9, title: 'TP Outils libres', teacher: 'Bouhamed', room: 'LAB2', group: 'G2', day: 'SUN', slot: 'TS1', color: '#7986cb', sessions: 1 },
+        { id: 10, title: 'TD Syst temps-réel', teacher: 'Ben Brika', room: 'S06', group: 'G2', day: 'SUN', slot: 'TS2', color: '#4db6ac', sessions: 1 },
+        { id: 11, title: 'C Outils libres', teacher: 'Bouhamed', room: 'Amphi A', group: 'All', day: 'SUN', slot: 'TS3', color: '#4db6ac', sessions: 1 },
+        { id: 12, title: 'C Syst temps-réel', teacher: 'Ben Brika', room: 'S', group: 'All', day: 'SUN', slot: 'TS5', color: '#4db6ac', sessions: 1 },
+        
+        // Monday events
+        { id: 13, title: 'C Big data', teacher: 'Mefteh', room: 'S05', group: 'All', day: 'MON', slot: 'TS1', color: '#ff8a65', sessions: 1 },
+        { id: 14, title: 'C Concep logic emb', teacher: 'Bagas', room: 'S05', group: 'All', day: 'MON', slot: 'TS2', color: '#ff8a65', sessions: 1 },
+        { id: 15, title: 'TP Concep logic', teacher: 'Bagas', room: 'LAB3', group: 'G1', day: 'MON', slot: 'TS3', color: '#7986cb', sessions: 1 },
+        { id: 16, title: 'TP Syst temps-réel', teacher: 'Ben Brika', room: 'LAB4', group: 'G1', day: 'MON', slot: 'TS4', color: '#7986cb', sessions: 1 },
+        { id: 17, title: 'TD Syst temps', teacher: 'Ben Brika', room: '', group: 'G2', day: 'MON', slot: 'TS3', color: '#4db6ac', sessions: 1 },
+        { id: 18, title: 'TP Concep logic emb', teacher: 'Bagas', room: 'LAB3', group: 'G2', day: 'MON', slot: 'TS4', color: '#7986cb', sessions: 1 },
+        
+        // Tuesday events
+        { id: 19, title: 'C Sécurité syst', teacher: 'Khaleifa', room: 'S05', group: 'All', day: 'TUE', slot: 'TS1', color: '#ef5350', sessions: 1 },
+        { id: 20, title: 'C Cryptologie appliqué', teacher: 'Laouiti', room: 'S05', group: 'All', day: 'TUE', slot: 'TS2', color: '#ffa726', sessions: 1 },
+        { id: 21, title: 'TP Cloud Computing', teacher: 'Yagoub', room: 'LAB1', group: 'G1', day: 'TUE', slot: 'TS3', color: '#4fc3f7', sessions: 2 }, // 3-hour event
+        { id: 22, title: 'TP Cryptologie appliqué', teacher: 'Laouiti', room: 'LAB3', group: 'G2', day: 'TUE', slot: 'TS3', color: '#ffa726', sessions: 2 }, // 3-hour event
+    ];
+    
+    // Generate schedule with days in rows and time slots in columns
+    function generateSchedule() {
+        const tbody = document.getElementById('scheduleBody');
+        tbody.innerHTML = '';
+        
+        days.forEach(day => {
+            const tr = document.createElement('tr');
+            
+            // Add day cell
+            const dayCell = document.createElement('td');
+            dayCell.className = 'day-cell';
+            dayCell.textContent = day.name;
+            tr.appendChild(dayCell);
+            
+            // Add time slot cells
+            timeSlots.forEach(slot => {
+                const cell = document.createElement('td');
+                cell.className = 'schedule-cell';
+                cell.id = `cell-${day.id}-${slot.code}`;
+                cell.dataset.dayId = day.id;
+                cell.dataset.slotCode = slot.code;
+                
+                // Add event container to each cell
+                const eventContainer = document.createElement('div');
+                eventContainer.className = 'event-container';
+                cell.appendChild(eventContainer);
+                
+                // Cell click handler (only triggers if the click was not on an event)
+                cell.addEventListener('click', function(e) {
+                    if (e.target === cell || e.target === eventContainer) {
+                        document.getElementById('selectedDay').value = day.id;
+                        document.getElementById('selectedSlot').value = slot.code;
+                        
+                        // Reset the form
+                        document.getElementById('eventForm').reset();
+                        document.getElementById('eventColor').value = '#3788d8';
+                        
+                        // Show Add Event modal
+                        eventModal.show();
+                    }
+                });
+                
+                tr.appendChild(cell);
+            });
+            
+            tbody.appendChild(tr);
+        });
+        
+        // Load initial events from the data
+        events.push(...initialEvents);
+        displayEvents();
+    }
+    
+    // Find next time slot
+    function getNextTimeSlot(currentSlot) {
+        const slotIndex = timeSlots.findIndex(slot => slot.code === currentSlot);
+        return (slotIndex < timeSlots.length - 1) ? timeSlots[slotIndex + 1].code : null;
+    }
+    
+    // Display events on the schedule
+    function displayEvents() {
+        // Clear existing events
+        document.querySelectorAll('.event-container').forEach(container => {
+            container.innerHTML = '';
+        });
+        
+        // Group events by day and slot
+        const eventsByCell = {};
+        events.forEach(event => {
+            const cellId = `cell-${event.day}-${event.slot}`;
+            if (!eventsByCell[cellId]) {
+                eventsByCell[cellId] = [];
+            }
+            eventsByCell[cellId].push(event);
+            
+            // For 2-session events, we need to mark the next slot as occupied by this event
+            if (event.sessions === 2) {
+                const nextSlot = getNextTimeSlot(event.slot);
+                if (nextSlot) {
+                    const nextCellId = `cell-${event.day}-${nextSlot}`;
+                    if (!eventsByCell[nextCellId]) {
+                        eventsByCell[nextCellId] = [];
+                    }
+                    // Add a special flag to indicate this is a continuation
+                    eventsByCell[nextCellId].push({...event, isSecondSession: true, hideInDisplay: true});
+                }
+            }
+        });
+        
+        // Display events in their respective cells
+        for (const [cellId, cellEvents] of Object.entries(eventsByCell)) {
+            const cell = document.getElementById(cellId);
+            if (cell) {
+                const container = cell.querySelector('.event-container');
+                
+                cellEvents.forEach(event => {
+                    // Skip display for continuation slots
+                    if (event.hideInDisplay) {
+                        return;
+                    }
+                    
+                    const eventEl = document.createElement('div');
+                    eventEl.className = 'event';
+                    eventEl.dataset.eventId = event.id;
+                    eventEl.style.backgroundColor = event.color;
+                    
+                    // For 2-session events, make them twice as tall
+                    if (event.sessions === 2) {
+                        eventEl.classList.add('event-double');
+                    }
+                    
+                    // Structure the event content with title and details
+                    eventEl.innerHTML = `
+                        <div class="event-title">${event.title}</div>
+                        <div class="event-details">
+                            <span>${event.group}</span>
+                            <span>${event.room}</span>
+                        </div>
+                        ${event.sessions > 1 ? '<div class="event-duration">' + event.sessions + ' sessions</div>' : ''}
+                    `;
+                    
+                    // Add hover and click handlers
+                    eventEl.addEventListener('mouseover', function() {
+                        this.classList.add('event-hover');
+                    });
+                    
+                    eventEl.addEventListener('mouseout', function() {
+                        this.classList.remove('event-hover');
+                    });
+                    
+                    eventEl.addEventListener('click', function(e) {
+                        e.stopPropagation(); // Prevent cell click handler from firing
+                        
+                        // Find the event data
+                        const eventId = this.dataset.eventId;
+                        const eventData = events.find(e => e.id.toString() === eventId);
+                        
+                        if (eventData) {
+                            // Populate edit form
+                            document.getElementById('editEventId').value = eventData.id;
+                            document.getElementById('editEventTitle').value = eventData.title;
+                            document.getElementById('editTeacher_id').value = getTeacherIdByName(eventData.teacher);
+                            document.getElementById('editRoom_id').value = eventData.room;
+                            document.getElementById('editGroup_id').value = eventData.group;
+                            document.getElementById('editEventColor').value = eventData.color;
+                            document.getElementById('editSessions').value = eventData.sessions;
+                            document.getElementById('editSelectedDay').value = eventData.day;
+                            document.getElementById('editSelectedSlot').value = eventData.slot;
+                            
+                            // Show edit modal
+                            editModal.show();
+                        }
+                    });
+                    
+                    container.appendChild(eventEl);
+                });
+            }
+        }
+    }
+    
+    // Helper function to get teacher ID by name
+    function getTeacherIdByName(name) {
+        const teacherMap = {
+            'Khaleifa': '1',
+            'Ben Brika': '2',
+            'Bouhamed': '3',
+            'Yagoub': '4',
+            'Laouiti': '5',
+            'Bagas': '6',
+            'Mefteh': '7',
+            'Maloul': '8'
+        };
+        return teacherMap[name] || '';
+    }
+    
+    // Handle add form submission
+    document.getElementById('eventForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const title = document.getElementById('eventTitle').value;
+        const teacher = document.getElementById('teacher_id').selectedOptions[0].textContent;
+        const room = document.getElementById('room_id').value;
+        const group = document.getElementById('group_id').value;
+        const color = document.getElementById('eventColor').value;
+        const day = document.getElementById('selectedDay').value;
+        const slot = document.getElementById('selectedSlot').value;
+        const sessions = parseInt(document.getElementById('sessions').value);
+        
+        // Generate a new ID (max existing ID + 1)
+        const newId = Math.max(...events.map(e => e.id), 0) + 1;
+
+        events.push({
+            id: newId,
+            title: title,
+            teacher: teacher,
+            room: room,
+            group: group,
+            day: day,
+            slot: slot,
+            color: color,
+            sessions: sessions
+        });
+        
+        displayEvents();
+        eventModal.hide();
+        e.target.reset();
+        document.getElementById('eventColor').value = '#3788d8';
+    });
+    
+    // Handle edit form submission
+    document.getElementById('editEventForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const id = parseInt(document.getElementById('editEventId').value);
+        const title = document.getElementById('editEventTitle').value;
+        const teacher = document.getElementById('editTeacher_id').selectedOptions[0].textContent;
+        const room = document.getElementById('editRoom_id').value;
+        const group = document.getElementById('editGroup_id').value;
+        const color = document.getElementById('editEventColor').value;
+        const day = document.getElementById('editSelectedDay').value;
+        const slot = document.getElementById('editSelectedSlot').value;
+        const sessions = parseInt(document.getElementById('editSessions').value);
+        
+        // Find and update the event
+        const eventIndex = events.findIndex(e => e.id === id);
+        if (eventIndex !== -1) {
+            events[eventIndex] = {
+                id,
+                title,
+                teacher,
+                room,
+                group,
+                day,
+                slot,
+                color,
+                sessions
+            };
+            
+            displayEvents();
+            editModal.hide();
+        }
+    });
+    
+    // Handle delete event
+    document.getElementById('deleteEventBtn').addEventListener('click', function() {
+        const id = parseInt(document.getElementById('editEventId').value);
+        
+        // Remove the event
+        const eventIndex = events.findIndex(e => e.id === id);
+        if (eventIndex !== -1) {
+            events.splice(eventIndex, 1);
+            displayEvents();
+            editModal.hide();
+        }
+    });
+    
+    // Initialize the schedule
+    generateSchedule();
+  });
+</script>
+@endsection
+ --}}
+
+
+
+
+
+{{-- @extends('layouts.app')
+
+@section('title', __('Specialty Settings'))
+
+@section('content')
+<div class="card p-4">
+    <ul class="nav nav-tabs mb-4">
+        <li class="nav-item"><a class="nav-link" href="{{ route('specialty.get', $specialty->id) }}"><span class="mdi mdi-cog-outline me-2"></span>{{ __('Edit Specialty') }}</a></li>
+        <li class="nav-item"><a class="nav-link" href="{{ route('specialty.courses', $specialty->id) }}"><span class="mdi mdi-key-outline me-2"></span>{{ __('Courses') }}</a></li>
+        <li class="nav-item"><a class="nav-link" href="{{ route('specialty.groups', $specialty->id) }}"><span class="mdi mdi-key-outline me-2"></span>{{ __('Groups') }}</a></li>
+        <li class="nav-item"><a class="nav-link active" href="javascript:void(0);"><span class="mdi mdi-key-outline me-2"></span>{{ __('Table') }}</a></li>
+    </ul>
+
+    <div class="table-responsive card">
+        <table class="schedule-table" id="scheduleTable">
+            <thead>
+                <tr>
+                    <th rowspan="2">Day</th>
+                    <th colspan="6" class="shift-header">Time Slots</th>
+                </tr>
+                <tr>
+                    <!-- Time slots -->
+                    <th>8:30-10:00</th>
+                    <th>10:10-11:40</th>
+                    <th>11:50-13:20</th>
+                    <th>13:30-15:00</th>
+                    <th>15:10-16:40</th>
+                    <th>16:50-18:20</th>
+                </tr>
+            </thead>
+            <tbody id="scheduleBody">
+                <!-- Days will be inserted here -->
+            </tbody>
+        </table>
+    </div>
+    
+    <!-- Bootstrap Modal -->
+    <div class="modal fade" id="eventModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <form id="eventForm" class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Add Event</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="eventTitle" class="form-label">Event Title</label>
+                        <input type="text" id="eventTitle" class="form-control" required>
+                    </div>
+                    <div class="form-group form-group-floating mb-3">
+                        <label for="teacher_id" class="form-label">{{ __('Teacher') }}</label>
+                        <div class="custom-select-container">
+                            <select class="form-select custom-select" id="teacher_id" name="teacher_id" required>
+                                <option value="">{{ __('Select Teacher') }}</option>
+                                <option value="1">Khaleifa</option>
+                                <option value="2">Ben Brika</option>
+                                <option value="3">Bouhamed</option>
+                                <option value="4">Yagoub</option>
+                                <option value="5">Laouiti</option>
+                                <option value="6">Bagas</option>
+                                <option value="7">Mefteh</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group form-group-floating mb-3">
+                        <label for="room_id" class="form-label">{{ __('Room') }}</label>
+                        <div class="custom-select-container">
+                            <select class="form-select custom-select" id="room_id" name="room_id" required>
+                                <option value="">{{ __('Select Room') }}</option>
+                                <option value="S05">S05</option>
+                                <option value="S06">S06</option>
+                                <option value="LAB1">LAB1</option>
+                                <option value="LAB2">LAB2</option>
+                                <option value="LAB3">LAB3</option>
+                                <option value="LAB4">LAB4</option>
+                                <option value="Amphi A">Amphi A</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group form-group-floating mb-3">
+                        <label for="group_id" class="form-label">{{ __('Group') }}</label>
+                        <div class="custom-select-container">
+                            <select class="form-select custom-select" id="group_id" name="group_id" required>
+                                <option value="">{{ __('Select Group') }}</option>
+                                <option value="G1">G1</option>
+                                <option value="G2">G2</option>
+                                <option value="All">All Groups</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="eventColor" class="form-label">Color</label>
+                        <input type="color" id="eventColor" class="form-control form-control-color" value="#3788d8" required>
+                    </div>
+                    <input type="hidden" id="selectedDay">
+                    <input type="hidden" id="selectedSlot">
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-primary">Add Event</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<style>
+    .nav-tabs {
+        border-bottom: none;
+    }
+    .nav-tabs .nav-link {
+        border: none;
+        color: #6c757d;
+    }
+    .nav-tabs .nav-link.active {
+        color: #0d6efd;
+        border-bottom: 2px solid #0d6efd;
+    }
+
+    .schedule-container {
+        max-width: 1200px;
+        margin: 40px auto;
+        overflow-x: auto;
+    }
+    .schedule-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+    .schedule-table th, .schedule-table td {
+        border: 1px solid #ddd;
+        padding: 8px;
+        text-align: center;
+        height: 80px; /* Increased height */
+    }
+    .schedule-table th {
+        background-color: #f8f9fa;
+        position: sticky;
+        top: 0;
+        z-index: 10;
+    }
+    .shift-header {
+        background-color: #e9ecef;
+    }
+    .day-cell {
+        font-weight: bold;
+        background-color: #f8f9fa;
+        width: 120px;
+    }
+    .schedule-cell {
+        position: relative;
+        vertical-align: top;
+        cursor: pointer;
+        min-width: 140px;
+        padding: 4px;
+    }
+    .schedule-cell:hover {
+        background-color: #f1f3f5;
+    }
+    
+    /* Event styles */
+    .event-container {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        height: 100%;
+    }
+    .event {
+        color: white;
+        border-radius: 3px;
+        padding: 4px;
+        font-size: 11px;
+        line-height: 1.1;
+        text-align: center;
+    }
+    .event-title {
+        font-weight: bold;
+        margin-bottom: 1px;
+    }
+    .event-details {
+        display: flex;
+        justify-content: space-between;
+        font-size: 10px;
+    }
+    
+    /* Color categories similar to the photo */
+    .event-tp { background-color: #7986cb; }
+    .event-td { background-color: #4db6ac; }
+    .event-c { background-color: #ff8a65; }
+    .event-cloud { background-color: #4fc3f7; }
+    .event-crypto { background-color: #ffa726; }
+    .event-security { background-color: #ef5350; }
+    .event-english { background-color: #ffee58; }
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const modal = new bootstrap.Modal(document.getElementById('eventModal'));
+    const events = [];
+    
+    // Time slots configuration
+    const timeSlots = [
+        { code: 'TS1', display: '8:30-10:00' },
+        { code: 'TS2', display: '10:10-11:40' },
+        { code: 'TS3', display: '11:50-13:20' },
+        { code: 'TS4', display: '13:30-15:00' },
+        { code: 'TS5', display: '15:10-16:40' },
+        { code: 'TS6', display: '16:50-18:20' }
+    ];
+    
+    // Days configuration (as in the photo)
+    const days = [
+        { id: 'SAT', name: 'Saturday', name_ar: 'السبت' },
+        { id: 'SUN', name: 'Sunday', name_ar: 'الأحد' },
+        { id: 'MON', name: 'Monday', name_ar: 'الإثنين' },
+        { id: 'TUE', name: 'Tuesday', name_ar: 'الثلاثاء' },
+        { id: 'WED', name: 'Wednesday', name_ar: 'الأربعاء' }
+    ];
+
+    // Initial event data (to match the photo)
+    const initialEvents = [
+        // Saturday events
+        { title: 'TP Sécurité syst', teacher: 'Khaleifa', room: 'S06', group: 'G1', day: 'SAT', slot: 'TS1', color: '#ef5350' },
+        { title: 'TP Big data', teacher: 'Maloul', room: 'LAB3', group: 'G1', day: 'SAT', slot: 'TS2', color: '#7986cb' },
+        { title: 'TP Big data', teacher: 'Maloul', room: 'LAB3', group: 'G2', day: 'SAT', slot: 'TS1', color: '#7986cb' },
+        { title: 'TP Sécurité syst', teacher: 'Khaleifa', room: 'S06', group: 'G2', day: 'SAT', slot: 'TS2', color: '#ef5350' },
+        { title: 'C Cloud Computing', teacher: 'Yagoub', room: 'Amphi A', group: 'All', day: 'SAT', slot: 'TS3', color: '#4fc3f7' },
+        { title: 'C Anglais scien', teacher: '', room: '', group: 'All', day: 'SAT', slot: 'TS5', color: '#ffee58' },
+        { title: 'à distance', teacher: '', room: '', group: 'All', day: 'SAT', slot: 'TS6', color: '#ffee58' },
+        
+        // Sunday events
+        { title: 'TD Syst temps-réel', teacher: 'Ben Brika', room: 'S06', group: 'G1', day: 'SUN', slot: 'TS1', color: '#4db6ac' },
+        { title: 'TP Outils libres', teacher: 'Bouhamed', room: 'LAB2', group: 'G1', day: 'SUN', slot: 'TS2', color: '#7986cb' },
+        { title: 'TP Outils libres', teacher: 'Bouhamed', room: 'LAB2', group: 'G2', day: 'SUN', slot: 'TS1', color: '#7986cb' },
+        { title: 'TD Syst temps-réel', teacher: 'Ben Brika', room: 'S06', group: 'G2', day: 'SUN', slot: 'TS2', color: '#4db6ac' },
+        { title: 'C Outils libres', teacher: 'Bouhamed', room: 'Amphi A', group: 'All', day: 'SUN', slot: 'TS3', color: '#4db6ac' },
+        { title: 'C Syst temps-réel', teacher: 'Ben Brika', room: 'S', group: 'All', day: 'SUN', slot: 'TS5', color: '#4db6ac' },
+        
+        // Monday events
+        { title: 'C Big data', teacher: 'Mefteh', room: 'S05', group: 'All', day: 'MON', slot: 'TS1', color: '#ff8a65' },
+        { title: 'C Concep logic emb', teacher: 'Bagas', room: 'S05', group: 'All', day: 'MON', slot: 'TS2', color: '#ff8a65' },
+        { title: 'TP Concep logic', teacher: 'Bagas', room: 'LAB3', group: 'G1', day: 'MON', slot: 'TS3', color: '#7986cb' },
+        { title: 'TP Syst temps-réel', teacher: 'Ben Brika', room: 'LAB4', group: 'G1', day: 'MON', slot: 'TS4', color: '#7986cb' },
+        { title: 'TD Syst temps', teacher: 'Ben Brika', room: '', group: 'G2', day: 'MON', slot: 'TS3', color: '#4db6ac' },
+        { title: 'TP Concep logic emb', teacher: 'Bagas', room: 'LAB3', group: 'G2', day: 'MON', slot: 'TS4', color: '#7986cb' },
+        
+        // Tuesday events
+        { title: 'C Sécurité syst', teacher: 'Khaleifa', room: 'S05', group: 'All', day: 'TUE', slot: 'TS1', color: '#ef5350' },
+        { title: 'C Cryptologie appliqué', teacher: 'Laouiti', room: 'S05', group: 'All', day: 'TUE', slot: 'TS2', color: '#ffa726' },
+        { title: 'TP Cloud Computing', teacher: 'Yagoub', room: 'LAB1', group: 'G1', day: 'TUE', slot: 'TS3', color: '#4fc3f7' },
+        { title: 'TP Cryptologie appliqué', teacher: 'Laouiti', room: 'LAB3', group: 'G2', day: 'TUE', slot: 'TS3', color: '#ffa726' },
+        { title: 'TP Cryptologie appliqué', teacher: 'Laouiti', room: 'LAB3', group: 'G1', day: 'TUE', slot: 'TS4', color: '#ffa726' },
+        { title: 'TP Cloud Computing', teacher: 'Yagoub', room: 'LAB1', group: 'G2', day: 'TUE', slot: 'TS4', color: '#4fc3f7' }
+    ];
+    
+    // Generate schedule with days in rows and time slots in columns
+    function generateSchedule() {
+        const tbody = document.getElementById('scheduleBody');
+        tbody.innerHTML = '';
+        
+        days.forEach(day => {
+            const tr = document.createElement('tr');
+            
+            // Add day cell
+            const dayCell = document.createElement('td');
+            dayCell.className = 'day-cell';
+            dayCell.textContent = day.name;
+            tr.appendChild(dayCell);
+            
+            // Add time slot cells
+            timeSlots.forEach(slot => {
+                const cell = document.createElement('td');
+                cell.className = 'schedule-cell';
+                cell.id = `cell-${day.id}-${slot.code}`;
+                cell.dataset.dayId = day.id;
+                cell.dataset.slotCode = slot.code;
+                
+                // Add event container to each cell
+                const eventContainer = document.createElement('div');
+                eventContainer.className = 'event-container';
+                cell.appendChild(eventContainer);
+                
+                cell.addEventListener('click', function() {
+                    document.getElementById('selectedDay').value = day.id;
+                    document.getElementById('selectedSlot').value = slot.code;
+                    modal.show();
+                });
+                
+                tr.appendChild(cell);
+            });
+            
+            tbody.appendChild(tr);
+        });
+        
+        // Load initial events from the data
+        events.push(...initialEvents);
+        displayEvents();
+    }
+    
+    // Display events on the schedule
+    function displayEvents() {
+        // Clear existing events
+        document.querySelectorAll('.event-container').forEach(container => {
+            container.innerHTML = '';
+        });
+        
+        // Group events by day and slot
+        const eventsByCell = {};
+        events.forEach(event => {
+            const cellId = `cell-${event.day}-${event.slot}`;
+            if (!eventsByCell[cellId]) {
+                eventsByCell[cellId] = [];
+            }
+            eventsByCell[cellId].push(event);
+        });
+        
+        // Display events in their respective cells
+        for (const [cellId, cellEvents] of Object.entries(eventsByCell)) {
+            const cell = document.getElementById(cellId);
+            if (cell) {
+                const container = cell.querySelector('.event-container');
+                
+                cellEvents.forEach(event => {
+                    const eventEl = document.createElement('div');
+                    eventEl.className = 'event';
+                    eventEl.style.backgroundColor = event.color;
+                    
+                    // Structure the event content with title and details
+                    eventEl.innerHTML = `
+                        <div class="event-title">${event.title}</div>
+                        <div class="event-details">
+                            <span>${event.group}</span>
+                            <span>${event.room}</span>
+                        </div>
+                    `;
+                    
+                    container.appendChild(eventEl);
+                });
+            }
+        }
+    }
+    
+    // Handle form submission
+    document.getElementById('eventForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const title = document.getElementById('eventTitle').value;
+        const teacher = document.getElementById('teacher_id').selectedOptions[0].textContent;
+        const room = document.getElementById('room_id').value;
+        const group = document.getElementById('group_id').value;
+        const color = document.getElementById('eventColor').value;
+        const day = document.getElementById('selectedDay').value;
+        const slot = document.getElementById('selectedSlot').value;
+
+        events.push({
+            title: title,
+            teacher: teacher,
+            room: room,
+            group: group,
+            day: day,
+            slot: slot,
+            color: color
+        });
+        
+        displayEvents();
+        modal.hide();
+        e.target.reset();
+        document.getElementById('eventColor').value = '#3788d8';
+    });
+    
+    // Initialize the schedule
+    generateSchedule();
+});
+</script>
+@endsection --}}
